@@ -12,7 +12,7 @@ public class JerseyAutoDiscoverable implements AutoDiscoverable {
   @Override
   public void configure(FeatureContext context) {
     Configuration config = context.getConfiguration();
-    Object gensonDisabled = config.getProperty("jersey.genson.disable");
+    Object gensonDisabled = config.getProperty("jaxrs.genson.disable");
     boolean disabled = gensonDisabled != null && "true".equalsIgnoreCase(gensonDisabled.toString());
 
     if (!config.isRegistered(GensonJsonConverter.class) && !disabled)

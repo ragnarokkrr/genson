@@ -5,9 +5,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ContextResolver;
@@ -44,13 +47,23 @@ public class GensonJsonConverter implements MessageBodyReader<Object>, MessageBo
     }
   }
 
-  private final ContextResolver<Genson> _gensonResolver;
+  private ContextResolver<Genson> _gensonResolver;
 
   public GensonJsonConverter() {
     this(new GensonStandardResolver());
   }
 
-  public GensonJsonConverter(@javax.ws.rs.core.Context Providers providers) {
+  public GensonJsonConverter(@javax.ws.rs.core.Context Providers providers
+          , @javax.ws.rs.core.Context ServletConfig servletConfig) {
+    // If we call "ClientBuilder.newClient()", reasteasy will not inject servletConfig.
+    String shouldDisableInServletInit = servletConfig == null
+        ? "false"
+        : servletConfig.getInitParameter("jaxrs.genson.disable");
+    boolean disabled = "true".equalsIgnoreCase(shouldDisableInServletInit);
+    if (disabled) {
+      return;
+    }
+
     ContextResolver<Genson> gensonResolver = providers.getContextResolver(Genson.class, null);
     if (gensonResolver == null)
       _gensonResolver = new GensonStandardResolver();

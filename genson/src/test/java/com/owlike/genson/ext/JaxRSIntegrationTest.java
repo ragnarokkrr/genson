@@ -70,6 +70,34 @@ public class JaxRSIntegrationTest {
   }
 
   @Test
+  public void testResteasyJsonConverterGensonEnabled() throws Exception {
+    Map<String, String> resteasy = new HashMap<String, String>();
+    resteasy.put("resteasy.scan", "true");
+    resteasy.put("jaxrs.genson.disable", "false");
+    resteasy.put("javax.ws.rs.Application", RestEasyApp.class.getName());
+    startServer(HttpServletDispatcher.class, resteasy);
+    try {
+      testIntegration();
+    } finally {
+      stopServer();
+    }
+  }
+
+  @Test(expected = Exception.class)
+  public void testResteasyJsonConverterGensonDisabled() throws Exception {
+    Map<String, String> resteasy = new HashMap<String, String>();
+    resteasy.put("resteasy.scan", "true");
+    resteasy.put("jaxrs.genson.disable", "true");
+    resteasy.put("javax.ws.rs.Application", RestEasyApp.class.getName());
+    startServer(HttpServletDispatcher.class, resteasy);
+    try {
+      testIntegration();
+    } finally {
+      stopServer();
+    }
+  }
+
+  @Test
   public void testResteasyThrowException() throws Exception {
     Map<String, String> resteasy = new HashMap<String, String>();
     resteasy.put("resteasy.scan", "true");
@@ -105,6 +133,7 @@ public class JaxRSIntegrationTest {
     server = new Server(9999);
     ServletHolder servletHolder = new ServletHolder(jaxrsProvider);
     servletHolder.setInitParameters(initParams);
+    servletHolder.setInitOrder(0);
     ServletContextHandler ctxHandler = new ServletContextHandler();
     ctxHandler.addServlet(servletHolder, "/*");
     ctxHandler.setContextPath("/");
